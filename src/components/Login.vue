@@ -12,7 +12,7 @@
 
       <v-flex xs12>
         <div align="center">
-          <h1 class="display-2 font-weight-bold mb-3">病房医生工作站</h1>
+          <h1 class="display-2 font-weight-bold mb-3">病房护士工作站</h1>
         </div>
       </v-flex>
 

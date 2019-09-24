@@ -23,6 +23,13 @@ export const router = new Router({
         import(/* webpackChunkName: "about" */ "../views/About.vue")
     },
     {
+      path: "/patient/:patient",
+      name: "patient",
+      // 接诊
+      component: () =>
+        import(/* webpackChunkName: "patient" */ "../views/patient.vue")
+    },
+    {
       path: "/login",
       name: "login",
       component: () =>

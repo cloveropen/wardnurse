@@ -3,53 +3,84 @@
     <v-navigation-drawer
       v-model="drawer"
       :clipped="$vuetify.breakpoint.lgAndUp"
-      app>
-      <v-list dense>
-        <template v-for="item in items">
-          <v-layout v-if="item.heading" :key="item.heading" align-center>
-            <v-flex xs6>
-              <v-subheader v-if="item.heading">{{ item.heading }}</v-subheader>
+      app
+    >
+    <v-flex d-flex>
+              &emsp;&emsp;
+              <v-select
+                v-model="room"
+                :items="depts"
+                item-text="item-text"
+                item-value="item-value"
+                label="病区"
+                hide-details
+                prepend-icon="map"
+              ></v-select>
             </v-flex>
-            <v-flex xs6 class="text-center">
-              <a href="#!" class="body-2 black--text">EDIT</a>
-            </v-flex>
-          </v-layout>
-          <v-list-group
-            v-else-if="item.children"
-            :key="item.text"
-            v-model="item.model"
-            :prepend-icon="item.model ? item.icon : item['icon-alt']"
-            append-icon
+<v-flex d-flex>
+             &nbsp; 病情            
+             <v-checkbox v-model="checkbox1" label="一般"></v-checkbox>&nbsp;
+    <v-checkbox v-model="checkbox2" label="急"></v-checkbox>&nbsp;
+    <v-checkbox v-model="checkbox3" label="重"></v-checkbox>
+</v-flex>
+      <v-expansion-panels popout>
+        <v-expansion-panel>
+          <v-expansion-panel-header>住院患者列表</v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <v-card>
+              <v-card-title>
+                <v-text-field
+                  v-model="search"
+                  append-icon="search"
+                  label="姓名或住院号"
+                  single-line
+                  hide-details
+                ></v-text-field>
+              </v-card-title>
+              <v-data-table
+                :headers="headers"
+                :items="desserts"
+                :search="search" @click:row="getpatient($event)"
+              ></v-data-table>
+            </v-card>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel>
+          <v-expansion-panel-header>待入院患者列表</v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <v-data-table
+              dense
+              :headers="headers"
+              :items="desserts"
+              :search="search"
+            ></v-data-table>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel>
+          <v-expansion-panel-header
+            >出院患者列表(3个月)</v-expansion-panel-header
           >
-            <template v-slot:activator>
-              <v-list-item>
-                <v-list-item-content>
-                  <v-list-item-title>{{ item.text }}</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-            </template>
-            <v-list-item
-              v-for="(child, i) in item.children"
-              :key="i" 
-              @click="clickMenu(child.id)">
-              <v-list-item-action v-if="child.icon">
-                <v-icon>{{ child.icon }}</v-icon>
-              </v-list-item-action>
-              <v-list-item-content>
-                <v-list-item-title>{{ child.text }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list-group>
-          <v-list-item v-else :key="item.text" @click="clickMenu(item.id)">
-            <v-list-item-action>
-              <v-icon>{{ item.icon }}</v-icon>
-            </v-list-item-action>
-            <v-list-item-content>
-              <v-list-item-title>{{ item.text }}</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </template>
-      </v-list>
+          <v-expansion-panel-content>
+            <v-card>
+              <v-card-title>
+                <v-text-field
+                  v-model="search"
+                  append-icon="search"
+                  label="姓名或住院号"
+                  single-line
+                  hide-details @click:row="getpatient1($event)"
+                ></v-text-field>
+              </v-card-title>
+              <v-data-table
+                dense
+                :headers="headers"
+                :items="desserts"
+                :search="search"
+              ></v-data-table>
+            </v-card>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+      </v-expansion-panels>
     </v-navigation-drawer>
 
     <v-app-bar
@@ -57,10 +88,10 @@
       app
       color="blue darken-3"
       dark
-      >
+    >
       <v-toolbar-title style="width: 300px" class="ml-0 pl-4">
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-        <span class="hidden-sm-and-down">病房护士工作站</span>
+        <span class="hidden-sm-and-down">病房医生工作站</span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-tooltip right>
@@ -93,7 +124,7 @@
           dark
           fab
           fixed
-          right 
+          right
           @click="clickMenu('logout')"
           v-on="on"
           ><v-icon>add</v-icon>
@@ -112,89 +143,121 @@ export default {
   data: () => ({
     dialog: false,
     drawer: null,
-    items: [
-      { icon: "contacts", text: "门诊挂号", id: "out_reg" },
-      { icon: "history", text: "划价收款", id: "out_cash" },
-      { icon: "content_copy", text: "交班结算", id: "out_chk" },
-      { icon: "keyboard", text: "发票号管理", id: "out_receipt" },
+    room: "",
+    checkbox1: true,
+    checkbox2: true,
+    checkbox3: true,
+    search: "",
+    depts: [
+      {text: "内一科一病区", value: "0101"},
+      {text: "内一科二病区",value: "0102"}
+    ],
+    headers: [
       {
-        icon: "keyboard_arrow_up",
-        "icon-alt": "keyboard_arrow_down",
-        text: "查询与统计",
-        model: true,
-        children: [
-          { text: "挂号明细", id: "detail_reg" },
-          { text: "收款明细", id: "detail_cash" },
-          { text: "交班明细", id: "detail_chk" },
-          { text: "退号退款明细", id: "detail_undo" },
-          { text: "操作日志", id: "detail_op" }
-        ]
+        text: "Dessert (100g serving)",
+        align: "left",
+        sortable: false,
+        value: "name"
+      },
+      { text: "Calories", value: "calories" },
+      { text: "Fat (g)", value: "fat" },
+      { text: "Carbs (g)", value: "carbs" },
+      { text: "Protein (g)", value: "protein" },
+      { text: "Iron (%)", value: "iron" }
+    ],
+    desserts: [
+      {
+        name: "Frozen Yogurt",
+        calories: 159,
+        fat: 6.0,
+        carbs: 24,
+        protein: 4.0,
+        iron: "1%"
       },
       {
-        icon: "settings",
-        "icon-alt": "keyboard_arrow_down",
-        text: "管理与维护",
-        model: false,
-        children: [
-          { text: "收费词典查询", id: "mg_dict" },
-          { text: "数据分析", id: "mg_analyse" },
-          { text: "发票管理", id: "mg_invoice" }
-        ]
+        name: "Ice cream sandwich",
+        calories: 237,
+        fat: 9.0,
+        carbs: 37,
+        protein: 4.3,
+        iron: "1%"
       },
-      { icon: "help", text: "退出登录", id: "logout" }
+      {
+        name: "Eclair",
+        calories: 262,
+        fat: 16.0,
+        carbs: 23,
+        protein: 6.0,
+        iron: "7%"
+      },
+      {
+        name: "Cupcake",
+        calories: 305,
+        fat: 3.7,
+        carbs: 67,
+        protein: 4.3,
+        iron: "8%"
+      },
+      {
+        name: "Gingerbread",
+        calories: 356,
+        fat: 16.0,
+        carbs: 49,
+        protein: 3.9,
+        iron: "16%"
+      },
+      {
+        name: "Jelly bean",
+        calories: 375,
+        fat: 0.0,
+        carbs: 94,
+        protein: 0.0,
+        iron: "0%"
+      },
+      {
+        name: "Lollipop",
+        calories: 392,
+        fat: 0.2,
+        carbs: 98,
+        protein: 0,
+        iron: "2%"
+      },
+      {
+        name: "Honeycomb",
+        calories: 408,
+        fat: 3.2,
+        carbs: 87,
+        protein: 6.5,
+        iron: "45%"
+      },
+      {
+        name: "Donut",
+        calories: 452,
+        fat: 25.0,
+        carbs: 51,
+        protein: 4.9,
+        iron: "22%"
+      },
+      {
+        name: "KitKat",
+        calories: 518,
+        fat: 26.0,
+        carbs: 65,
+        protein: 7,
+        iron: "6%"
+      }
     ]
   }),
   methods: {
-    clickMenu(tstr) {
-      console.log("点击=" + tstr);
-      if (tstr === "logout") {
-        localStorage.removeItem("user");
-        this.$router.push({ path: "/login" });
-      }
-      switch (tstr)
-      {
-        case "out_reg":
-          this.$router.push({ path: "/outreg" });
-          break;
-        case "out_cash":
-          this.$router.push({ path: "/outcash" });
-          break;
-        case "out_chk":
-          this.$router.push({ path: "/outchk" });
-          break;
-        case "out_receipt":
-          this.$router.push({ path: "/outreceipt" });
-          break;
-        case "detail_reg":
-          this.$router.push({ path: "/detailreg" });
-          break;
-        case "detail_cash":
-          this.$router.push({ path: "/detailcash" });
-          break;
-        case "detail_chk":
-          this.$router.push({ path: "/detailchk" });
-          break;
-        case "detail_undo":
-          this.$router.push({ path: "/detailundo" });
-          break;
-        case "detail_op":
-          this.$router.push({ path: "/detailop" });
-          break;
-        case "mg_dict":
-          this.$router.push({ path: "/mgdict" });
-          break;
-        case "mg_analyse":
-          this.$router.push({ path: "/mganalyse" });
-          break;
-        case "mg_invoice":
-          this.$router.push({ path: "/mginvoice" });
-          break;
-        default:
-          localStorage.removeItem("user");
-          this.$router.push({ path: "/login" });
-      }
-    },
+    
+    getpatient(e){
+      window.alert("click="+JSON.stringify(e))
+      this.$router.push({ name: "patient", params: { patient: e } });
 
+    },
+    getpatient1(e){
+      window.alert("click1="+JSON.stringify(e))
+    },
     selectSource() {
       window.location.href = "http://www.cloveropen.com";
     }
